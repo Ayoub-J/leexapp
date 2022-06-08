@@ -64,15 +64,15 @@ namespace MvcMovie.Controllers
         }
 
         [Authorize]
-        [HttpPut("/user/{id}")]
-        public async Task<User> ChangeAddress(int id, [FromBody] User address)
+        [HttpPut("/user")]
+        public async Task<User> ChangeAddress([FromBody] User address)
         {
             var accessToken = await HttpContext.GetTokenAsync("access_token");
             string token = accessToken.ToString();
             var username = _jwt.GetUsernameFromToken(token);
             var currentUser = _context.Users.FirstOrDefault(u => u.Username == username);
 
-            var user = _context.Users.FirstOrDefault(u => u.ID == id);
+            var user = _context.Users.FirstOrDefault(u => u.ID == currentUser.ID);
             if (user == null)
                 return null;
             

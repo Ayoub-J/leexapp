@@ -66,7 +66,7 @@ namespace MvcMovie.Controllers
                 if (BCrypt.Net.BCrypt.Verify(user.Password, currentUser.Password) == false)
                     return StatusCode(401 , "Password is not valid");
                 var Token = _jwt.GenerateToken(us);
-                return Ok(Token);
+                return StatusCode(200, Token);
             } catch (Exception ex) {
                 Console.WriteLine(ex);
                 return StatusCode(401 , "User doesn't exist");
@@ -82,7 +82,7 @@ namespace MvcMovie.Controllers
             var username = _jwt.GetUsernameFromToken(token);
             
             var currentUser = _context.Users.FirstOrDefault(u => u.Username == username);
-            UserDetails us =  new UserDetails {Username = currentUser.Username, Role = currentUser.Role};
+            UserDetails us =  new UserDetails {Username = currentUser.Username, Role = currentUser.Role, Id = currentUser.ID};
 
             return us;
         }

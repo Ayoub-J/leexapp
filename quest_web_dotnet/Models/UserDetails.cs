@@ -8,6 +8,7 @@ namespace quest_web.Models
 {
     public class UserDetails
     {
+        public int Id { get; set; }
         public string Username { get; set; }
         [JsonIgnore]
         public string Password { get; set; }
