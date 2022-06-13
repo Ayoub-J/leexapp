@@ -12,6 +12,7 @@ using quest_web.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using System;
+using quest_web.Repository;
 
 namespace MvcMovie.Controllers
 {
@@ -23,12 +24,14 @@ namespace MvcMovie.Controllers
         private readonly ILogger<DefaultController> _logger;
         private readonly APIDbContext _context;
         private readonly JwtTokenUtil _jwt;
+        private readonly UserRepository _userRepository;
 
         public UserController(ILogger<DefaultController> logger, APIDbContext context, JwtTokenUtil jwt)
         {
             _context = context;
             _logger = logger;
             _jwt = jwt;
+            _userRepository = new UserRepository(context);
         }
 
         [Authorize]
@@ -38,13 +41,10 @@ namespace MvcMovie.Controllers
             var accessToken = await HttpContext.GetTokenAsync("access_token");
             string token = accessToken.ToString();
             var username = _jwt.GetUsernameFromToken(token);
-            var currentUser = _context.Users.FirstOrDefault(u => u.Username == username);
+//            var currentUser = _context.Users.FirstOrDefault(u => u.Username == username);
 
 
-            var list = _context.Users.ToList();
-            if (list == null)
-                return null;
-            return list;
+            return _userRepository.getAllUser();
         }
 
         [Authorize]
@@ -56,16 +56,13 @@ namespace MvcMovie.Controllers
             var username = _jwt.GetUsernameFromToken(token);
             var currentUser = _context.Users.FirstOrDefault(u => u.Username == username);
 
-            var user = _context.Users.FirstOrDefault(u => u.ID == id);
-            if (user == null)
-                return null;
-            return user;
+            return _userRepository.getInfoUserById(id);
             //return StatusCode(201 , "Street "  +  _address.road  + " City " + _address.City + " was Created!");
         }
 
         [Authorize]
         [HttpPut("/user")]
-        public async Task<User> ChangeAddress([FromBody] User address)
+        public async Task<User> ChangeUser([FromBody] User address)
         {
             var accessToken = await HttpContext.GetTokenAsync("access_token");
             string token = accessToken.ToString();

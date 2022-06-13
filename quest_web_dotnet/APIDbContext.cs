@@ -11,9 +11,11 @@ namespace quest_web.DAL
         {
         }
 
-        public DbSet<User> Users { get; set; }
+        public APIDbContext()
+        { }
+        public virtual DbSet<User> Users { get; set; }
 
-        public DbSet <Address> Address { get; set; }
+        public virtual DbSet <Address> Address { get; set; }
 
     }
 }

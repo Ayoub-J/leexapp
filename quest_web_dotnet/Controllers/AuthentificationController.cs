@@ -12,6 +12,7 @@ using quest_web.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using System;
+using quest_web.Repository;
 
 namespace MvcMovie.Controllers
 {
@@ -23,11 +24,13 @@ namespace MvcMovie.Controllers
         private readonly ILogger<DefaultController> _logger;
         private readonly APIDbContext _context;
         private readonly JwtTokenUtil _jwt;
+        public readonly UserRepository _userRepository;
 
         public AuthenticationController(ILogger<DefaultController> logger, APIDbContext context, JwtTokenUtil jwt)
         {
             _context = context;
             _logger = logger;
+            _userRepository = new UserRepository(_context);
             _jwt = jwt;
         }
 
@@ -35,24 +38,13 @@ namespace MvcMovie.Controllers
         [HttpPost("/register")]
         public IActionResult register([FromBody]User user)
         {
-            User _user = new User {Username = user.Username, Password = user.Password, Role = user.Role};
-            _user.Creation_Date = DateTime.Now;
-            _user.Updated_Date = _user.Creation_Date;
-             
-            if (String.IsNullOrEmpty(_user.Role.ToString()) == true)
-                _user.Role = 0;
-
-            var use = _context.Users.Where(u => u.Username == user.Username).FirstOrDefault();
-            if (String.IsNullOrEmpty(_user.Username) == true || String.IsNullOrEmpty(_user.Password) == true) {
+            int res = _userRepository.AddUser(user);
+            if (res == -42) {
                 return BadRequest("Username or password expected value but is none!");
-            } else if (use!=null) {
+            } else if (res == -84) {
                 return Conflict("Error username already exist!!!");
             } else {
-                _user.Password = BCrypt.Net.BCrypt.HashPassword(_user.Password);
-                var test = _context.Set<User>();
-                test.Add(_user);
-                _context.SaveChanges();
-                 return StatusCode(201 , "User "  +  _user.Username  + " Role " + _user.Role.ToString() + " was Created!");
+                 return StatusCode(201 , "User "  +  user.Username   + " was Created!");
             }
         }
 
@@ -81,10 +73,9 @@ namespace MvcMovie.Controllers
             string token = accessToken.ToString();
             var username = _jwt.GetUsernameFromToken(token);
             
-            var currentUser = _context.Users.FirstOrDefault(u => u.Username == username);
-            UserDetails us =  new UserDetails {Username = currentUser.Username, Role = currentUser.Role, Id = currentUser.ID};
+            
 
-            return us;
+            return _userRepository.getInfoUser(username);
         }
 
     }
